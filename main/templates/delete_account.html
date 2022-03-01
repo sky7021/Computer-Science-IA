@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Account Deletion</h1>
+        <form action='' method='post'>
+            {{ form.hidden_tag() }}
+
+            <p>
+                {{ form.delete() }}
+                {{ form.delete.label }}
+            </p>
+
+            {{ form.submit() }}
+        </form>
+{% endblock %}

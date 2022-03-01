@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}
+        {% for error in form.name.errors %}
+        {{ error }}
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.price.label }}<br>
+        {{ form.price(size=32) }}
+        {% for error in form.price.errors %}
+        {{ error }}
+        {% endfor %}
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

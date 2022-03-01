@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <p>
+    <label for="order-choice">Select a Order:</label>
+    <input list="order-selection" id="order-choice" name="order-choice" />
+
+    <datalist id="order-selection">
+        {% for order in orders %}
+        <option value='{{ order }}'>
+        {% endfor %}
+    </datalist>
+
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

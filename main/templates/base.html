@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <header>
+        {% if title %}
+        <h1>Welcome to {{ title }}!</h1>
+        {% else %}
+        <h1>Gensokyo</h1>
+        {% endif %}
+
+        <a href='{{ url_for("homepage" )}}'>Home</a>
+        <a href='{{ url_for("add_order" )}}'>Create order</a>
+        <a href='{{ url_for("search_order" )}}'>Search For order</a>
+        <a href='{{ url_for("search_profile" )}}'>Search For Profile</a>
+    </header>
+    <body>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li> {{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+
+        {%block content%}
+        {%endblock%}
+    </body>
+</html>

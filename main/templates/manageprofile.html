@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.add_order.label }}<br>
+        {{ form.add_order() }}
+        {% for error in form.add_order.errors %}
+        {{ error }}
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.remove_order.label }}<br>
+        {{ form.remove_order() }}
+        {% for error in form.remove_order.errors %}
+        {{ error }}
+        {% endfor %}
+    </p>
+
+    <p>
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <th>Order Name</th>
+                <th>Order Price</th>
+            </tr>
+
+            {% for order in orders %}
+                {% include '_order.html' %}
+            {% endfor %}
+        </table>
+    </p>
+
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}
