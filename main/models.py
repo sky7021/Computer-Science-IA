@@ -10,7 +10,7 @@ LinkOrder = db.Table('ProfileOrder',
 #user login class 
 class Admin(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64))
+    username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
@@ -24,10 +24,9 @@ class Admin(db.Model, UserMixin):
 class Profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True)
+    email = db.Column(db.String(120), index=True, unique=True)
 
-    orders = db.relationship('Order', back_populates='customers', secondary=LinkOrder,
-    primaryjoin=(LinkOrder.c.profile_id == id),
-    lazy='dynamic'
+    orders = db.relationship('Order', back_populates='customers', secondary=LinkOrder, lazy='dynamic'
     )
     
     def add_order(self, order):

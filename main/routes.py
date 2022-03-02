@@ -1,6 +1,6 @@
 from main import app, db
 from flask import render_template, redirect, url_for, request, flash, request
-from main.forms import DeleteOrderForm, EditOrderForm, OrderProfileForm, LoginForm, CreateForm, DeleteForm, MakeOrderForm, SearchOrderForm, SearchProfileForm
+from main.forms import CreateProfile, DeleteOrderForm, EditOrderForm, OrderProfileForm, LoginForm, CreateForm, DeleteForm, MakeOrderForm, SearchOrderForm, SearchProfileForm
 from flask_login import logout_user, current_user, login_user, login_required
 from main.models import Admin, Profile, Order
 from werkzeug.urls import url_parse
@@ -60,7 +60,29 @@ def register():
         flash('Account created')
         return redirect(url_for('login'))
     
-    return render_template('register.html', title='Create profile', form=form)
+    return render_template('register.html', title='Create admin', form=form)
+
+#creates customer profile
+@app.route('/create-profile', methods=['GET', 'POST'])
+@login_required
+def create_profile():
+
+    form = CreateProfile()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+
+        profile = Profile(username=username, email=email)
+        db.session.add(profile)
+        db.session.commit()
+
+        flash('Profile added')
+        return redirect(url_for('create_profile'))
+    
+    return render_template('createprofile.html', title='Create profile', form=form)
+
+
 
 #modify delete account to delete user profiles
 @app.route('/delete_account', methods=['GET', 'POST'])
@@ -203,7 +225,7 @@ def manageprofile(profilename):
         form.add_order.data = 'Leave Blank'
         form.remove_order.data = 'Leave Blank'
 
-    return render_template('manageprofile.html', title='Add Order To Profile', orders= obj_orders, form=form)
+    return render_template('manageprofile.html', title=f'{profilename}\'s Profile', profile=profile, orders= obj_orders, form=form)
     
 @app.route('/logout')
 def logout():

@@ -24,6 +24,18 @@ class CreateForm(FlaskForm):
         if Admin.query.filter_by(username=username.data).first() != None:
             raise ValidationError('That usename is already taken')
 
+#creates customer profile
+class CreateProfile(FlaskForm):
+    username = StringField('Enter a name', validators=[DataRequired()])
+    email = StringField('Enter an email', validators=[DataRequired()])
+    submit = SubmitField('Create Profile')
+
+    def validate_email(self, email):
+        mail = re.compile(r'^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$')
+
+        if not re.compile(mail).search(email.data):
+            raise ValidationError('Enter enter an email in a valid format')
+
 class MakeOrderForm(FlaskForm):
     name = StringField('Enter order name', validators=[DataRequired()])
     price = StringField('Enter order price', validators=[DataRequired()])
@@ -80,9 +92,9 @@ class EditOrderForm(FlaskForm):
         
     def validate_cost(self, cost):
         money = re.compile('|'.join([
-        r'^\$?(\d*\.\d{1,2})$',  # e.g., $.50, .50, $1.50, $.5, .5
-        r'^\$?(\d+)$',           # e.g., $500, $5, 500, 5
-        r'^\$(\d+\.?)$',         # e.g., $5.
+        r'^\$?(\d*\.\d{1,2})$',  
+        r'^\$?(\d+)$',           
+        r'^\$(\d+\.?)$',         
         ]))
 
         if not re.compile(money).search(cost.data):
@@ -93,11 +105,11 @@ class EditOrderForm(FlaskForm):
             order = Order.query.filter_by(name=newname.data).first()
 
             if order != None:
-                raise ValidationError('Enter a different Order name')
+                raise ValidationError('Enter a different item name')
 
 class OrderProfileForm(FlaskForm):
-    add_order = SelectField('Add orders to profile')
-    remove_order = SelectField('Remove order from profile')
+    add_order = SelectField('Add items to profile')
+    remove_order = SelectField('Remove item from profile')
     submit = SubmitField('Save Changes')
 
     def __init__(self, profile, *args, **kwargs):
@@ -111,7 +123,7 @@ class OrderProfileForm(FlaskForm):
         if add_order.data != 'Leave Blank':
             order = Order.query.filter_by(name=add_order.data).first()
             if self.profile.owns_order(order):
-                raise ValidationError('Order already owned')
+                raise ValidationError('Item already added')
             self.addedorder = add_order.data
     
     def validate_remove_order(self, remove_order):
@@ -120,9 +132,9 @@ class OrderProfileForm(FlaskForm):
             if remove_order.data != 'Leave Blank':
                 order = Order.query.filter_by(name=remove_order.data).first()
                 if not self.profile.owns_order(order):
-                    raise ValidationError('Order not owned, cannot remove')
+                    raise ValidationError('Item not added, cannot remove')
         else:
-            raise ValidationError('Cannot add and remove the same order')
+            raise ValidationError('Cannot add and remove the same item')
         
 
         
