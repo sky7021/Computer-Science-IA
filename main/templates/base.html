@@ -2,16 +2,22 @@
 <html>
     <header>
         {% if title %}
-        <h1>Welcome to {{ title }}!</h1>
+        <h1>{{ title }}</h1>
         {% else %}
-        <h1>Gensokyo</h1>
+        <h1>Customer Database</h1>
         {% endif %}
 
         <a href='{{ url_for("homepage" )}}'>Home</a>
-        <a href='{{ url_for("add_order" )}}'>Create order</a>
-        <a href='{{ url_for("search_order" )}}'>Search For order</a>
-        <a href='{{ url_for("search_profile" )}}'>Search For Profile</a>
-        <a href='{{ url_for("create_profile" )}}'>Create Profile</a>
+        <p> 
+            <a href='{{ url_for("add_order" )}}'>Create order</a>
+            <a href='{{ url_for("create_profile" )}}'>Create Profile</a>
+        </p>
+
+        <p>
+            <a href='{{ url_for("search_order" )}}'>Search For order</a>
+            <a href='{{ url_for("search_profile" )}}'>Search For Profile</a>
+        </p>
+
     </header>
     <body>
         {% with messages = get_flashed_messages() %}

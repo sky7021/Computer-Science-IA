@@ -1,6 +1,6 @@
 from main import app, db
 from flask import render_template, redirect, url_for, request, flash, request
-from main.forms import CreateProfile, DeleteOrderForm, EditOrderForm, OrderProfileForm, LoginForm, CreateForm, DeleteForm, MakeOrderForm, SearchOrderForm, SearchProfileForm
+from main.forms import CreateProfile, EditOrderForm, EmptyForm, OrderProfileForm, LoginForm, CreateForm, DeleteForm, MakeOrderForm, SearchOrderForm, SearchProfileForm
 from flask_login import logout_user, current_user, login_user, login_required
 from main.models import Admin, Profile, Order
 from werkzeug.urls import url_parse
@@ -82,8 +82,6 @@ def create_profile():
     
     return render_template('createprofile.html', title='Create profile', form=form)
 
-
-
 #modify delete account to delete user profiles
 @app.route('/delete_account', methods=['GET', 'POST'])
 @login_required
@@ -98,26 +96,43 @@ def delete_account():
     
     return render_template('delete_account.html', title='Account Deleteion', form=form)
 
-@app.route('/deleteorder/<name>', methods=['GET', 'POST'])
+@app.route('/deleteorder/<name>', methods=['POST'])
 @login_required
-def deleteorder(name):
-    form = DeleteOrderForm()
+def delete_order(name):
+    form = EmptyForm()
 
     if form.validate_on_submit():
-        #remove order from the account of every user that owns one
         order = Order.query.filter_by(name=name).first()
-        all_owners = order.owner_profiles()
-        
-        for owner in all_owners:
-            owner.remove_order(order)
-        
+
         #delete order from database
+        if order is None:
+            flash(f'Item {name} does not exist')
+            return redirect(url_for('search_order'))
+
         db.session.delete(order)
         db.session.commit()
         flash('Deletion successful')
         return redirect(url_for('search_order'))
-    
-    return render_template('delete_order.html', title='Order deletion', form=form)
+    else:
+        return redirect(url_for('search_order'))
+
+@app.route('/deleteprofile/<id>', methods=['POST'])
+@login_required
+def delete_profile(id):
+    form = EmptyForm()
+
+    if form.validate_on_submit():
+        profile = Profile.query.filter_by(id=id).first()
+        if profile is None:
+            flash(f'There is no profile with id {id}')
+            return redirect(url_for('index'))
+        
+        db.session.delete(profile)
+        db.session.commit()
+        flash('Deletion successful')
+        return redirect(url_for('search_profile'))
+    else:
+        return redirect(url_for('homepage'))
 
 @app.route('/makeorder', methods=['GET', 'POST'])
 @login_required
@@ -153,11 +168,12 @@ def search_order():
 @login_required
 def search_profile():
     form = SearchProfileForm()
-    all_profiles = [p.username for p in Profile.query.order_by('username')] #value label pairs to pass into form
+    all_profiles = [f'{p.email}, {p.username}' for p in Profile.query.order_by('username')] #value label pairs to pass into form
 
     if form.validate_on_submit():
-        name = request.form['profile-choice']
-        return redirect(url_for('manageprofile', profilename=name))
+        choice = request.form['profile-choice']
+        email = choice.split(', ')[0]
+        return redirect(url_for('manageprofile', email=email))
 
     return render_template('searchprofile.html', title='Search for Profile', profiles=all_profiles, form=form)
 
@@ -166,6 +182,7 @@ def search_profile():
 def edit_order(ordername):
     order = Order.query.filter_by(name=ordername).first()
     form = EditOrderForm(ordername)
+    delete_form = EmptyForm()
 
     if form.validate_on_submit():
         order.name = form.newname.data
@@ -178,20 +195,22 @@ def edit_order(ordername):
         form.newname.data = order.name
         form.cost.data = order.price
         
-    return render_template('editorder.html', title='Edit Order', form=form, name=ordername)
+    return render_template('editorder.html', title='Edit Order', form=form, delete_form=delete_form,
+    name=ordername)
 
-@app.route('/manageprofile/<profilename>/', methods=['GET', 'POST'])
+@app.route('/manageprofile/<email>/', methods=['GET', 'POST'])
 @login_required
-def manageprofile(profilename):
+def manageprofile(email):
 
     #TODO: render all of the profile's fumos inside of a table, display their total price
 
-    profile = Profile.query.filter_by(username=profilename).first()
+    profile = Profile.query.filter_by(email=email).first()
     if profile is None:
         flash('Profile not found')
         return redirect(url_for('homepage'))
 
     form = OrderProfileForm(profile)
+    delete_form = EmptyForm()
 
     all_orders = [f.name for f in Order.query.order_by('name').all()] + ['Leave Blank']
     form.add_order.choices = all_orders
@@ -201,9 +220,7 @@ def manageprofile(profilename):
     form.remove_order.choices = owned_orders
 
     if form.validate_on_submit():
-        #fumo user wants to add
         ordername = form.add_order.data
-        #fumo user wants to remove
         removename = form.remove_order.data
         
         #filled in options each
@@ -219,13 +236,15 @@ def manageprofile(profilename):
             flash('Order has successfully been removed from profile')
             db.session.commit()
 
-        return redirect(url_for('manageprofile', profilename=profilename))
+        return redirect(url_for('manageprofile', email=email))
     
     elif request.method == 'GET':
         form.add_order.data = 'Leave Blank'
         form.remove_order.data = 'Leave Blank'
 
-    return render_template('manageprofile.html', title=f'{profilename}\'s Profile', profile=profile, orders= obj_orders, form=form)
+    return render_template('manageprofile.html', title=f'{profile.username}\'s Profile', profile=profile, 
+    orders= obj_orders, form=form, delete_form=delete_form
+    )
     
 @app.route('/logout')
 def logout():

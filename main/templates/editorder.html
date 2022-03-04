@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
+<p>
+    <form action="{{ url_for('delete_order', name=name) }}" method="post">
+        {{ delete_form.hidden_tag() }}
+        {{ delete_form.submit(value='Delete Order')}}
+    </form>
+</p>
+
+
 <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
-    <a href='{{ url_for("deleteorder", name=name) }}'>Delete order</a>
     <p>
         {{ form.newname.label }}<br>
         {{ form.newname(size=32) }}

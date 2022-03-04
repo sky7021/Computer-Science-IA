@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<p>
+    Profile ID = {{ profile.id }}
+    Email = {{ profile.email }}
+    <form action="{{ url_for('delete_profile', id=profile.id) }}" method="post">
+        {{ delete_form.hidden_tag() }}
+        {{ delete_form.submit(value='Delete Profile')}}
+    </form>
+</p>
+
 <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
-    <p>
-        Profile ID = {{ profile.id }}
-        Email = {{ profile.email }}
-    </p>
     <p>
         {{ form.add_order.label }}<br>
         {{ form.add_order() }}
@@ -25,9 +30,11 @@
     <p>
         <table>
             <tr>
-                <th>Order ID</th>
-                <th>Order Name</th>
-                <th>Order Price</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
             </tr>
 
             {% for order in orders %}

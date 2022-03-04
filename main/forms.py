@@ -63,11 +63,6 @@ class DeleteForm(FlaskForm):
     delete = BooleanField('Delete account (This action cannot be undone!)', validators=[DataRequired()])
     submit = SubmitField('Delete account')
 
-#delete fumo
-class DeleteOrderForm(FlaskForm):
-    delete = BooleanField('Delete Order (This action cannot be undone!)', validators=[DataRequired()])
-    submit = SubmitField('Delete Order')
-
 #search for and edit fumo entries
 #TODO: retrieve id attributes as a list
 class SearchOrderForm(FlaskForm):
@@ -108,7 +103,7 @@ class EditOrderForm(FlaskForm):
                 raise ValidationError('Enter a different item name')
 
 class OrderProfileForm(FlaskForm):
-    add_order = SelectField('Add items to profile')
+    add_order = SelectField('Add / Modify items')
     remove_order = SelectField('Remove item from profile')
     submit = SubmitField('Save Changes')
 
@@ -124,17 +119,14 @@ class OrderProfileForm(FlaskForm):
             order = Order.query.filter_by(name=add_order.data).first()
             if self.profile.owns_order(order):
                 raise ValidationError('Item already added')
-            self.addedorder = add_order.data
+        self.addedorder = add_order.data
     
     def validate_remove_order(self, remove_order):
-        #make sure its not equal to add_order
-        if remove_order != self.addedorder:
-            if remove_order.data != 'Leave Blank':
-                order = Order.query.filter_by(name=remove_order.data).first()
-                if not self.profile.owns_order(order):
-                    raise ValidationError('Item not added, cannot remove')
-        else:
-            raise ValidationError('Cannot add and remove the same item')
-        
-
+        #no need to check for removing a nonexistant order; already checked in given options
+        print(self.addedorder)
+        if self.addedorder == 'Leave Blank' and remove_order.data == 'Leave Blank':
+            raise ValidationError('No changes have been made')
+                    
+class EmptyForm(FlaskForm):
+    submit = SubmitField()
         
