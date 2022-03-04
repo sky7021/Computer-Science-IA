@@ -35,7 +35,7 @@ class Profile(db.Model):
             self.orders.append(order)
     
     def remove_order(self, order):
-        #remove fumo if profile DOES own one
+        #removes item if Profile has it
         if self.owns_order(order):
             self.orders.remove(order)
     
@@ -45,12 +45,12 @@ class Profile(db.Model):
             return True
     
     def owned_orders(self):
-        #filter for list of fumos that the user owns
+        #filter for orders of profile
         return Order.query.join(
             LinkOrder, (LinkOrder.c.order_id == Order.id)).filter(LinkOrder.c.profile_id == self.id).order_by(Order.price)
 
     def __repr__(self):
-        return f'<{self.name}>'
+        return f'<{self.username}>'
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)

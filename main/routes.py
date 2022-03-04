@@ -181,7 +181,11 @@ def search_profile():
 @login_required
 def edit_order(ordername):
     order = Order.query.filter_by(name=ordername).first()
-    form = EditOrderForm(ordername)
+    if order is None:
+        flash('Item not found')
+        return redirect(url_for('homepage'))
+        
+    form = EditOrderForm(order)
     delete_form = EmptyForm()
 
     if form.validate_on_submit():

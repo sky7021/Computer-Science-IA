@@ -1,5 +1,4 @@
 from flask_wtf import FlaskForm
-from sqlalchemy import String
 from wtforms.validators import DataRequired, EqualTo, ValidationError, Length
 from wtforms.fields import StringField, PasswordField, SubmitField, IntegerField, BooleanField, SelectField, FloatField
 from main.models import Profile, Order, Admin
@@ -22,7 +21,7 @@ class CreateForm(FlaskForm):
 
     def validate_username(self, username):
         if Admin.query.filter_by(username=username.data).first() != None:
-            raise ValidationError('That usename is already taken')
+            raise ValidationError('That username is already taken')
 
 #creates customer profile
 class CreateProfile(FlaskForm):
@@ -35,6 +34,9 @@ class CreateProfile(FlaskForm):
 
         if not re.compile(mail).search(email.data):
             raise ValidationError('Enter enter an email in a valid format')
+        
+        if Profile.filter_by(email=email.data).first() != None:
+            raise ValidationError('That email has already been taken')
 
 class MakeOrderForm(FlaskForm):
     name = StringField('Enter order name', validators=[DataRequired()])
@@ -79,28 +81,34 @@ class EditOrderForm(FlaskForm):
     cost = StringField('Cost (CAD)', validators=[DataRequired()])
     submit = SubmitField('Save Changes')
 
-    def __init__(self, original_name, *args, **kwargs):
+    def __init__(self, order, *args, **kwargs):
 
         #__init__ for EditFumo now has all the methods of FlaskForm
         super(EditOrderForm, self).__init__(*args, **kwargs)
-        self.original_name = original_name
-        
+        self.original_name = order.name
+        self.original_price = order.price
+        self.changed_name = ''
+
+    def validate_newname(self, newname):
+        order = Order.query.filter_by(name=newname.data).first()
+
+        #newname can be old one if price is different 
+        if order != None and newname.data != self.original_name:
+            raise ValidationError('Enter a different item name')
+        self.changed_name = newname.data
+
     def validate_cost(self, cost):
         money = re.compile('|'.join([
         r'^\$?(\d*\.\d{1,2})$',  
         r'^\$?(\d+)$',           
         r'^\$(\d+\.?)$',         
         ]))
+        
+        if self.original_name == self.changed_name and str(self.original_price) == cost.data:
+            raise ValidationError('At least one parameter must be changed')
 
         if not re.compile(money).search(cost.data):
             raise ValidationError('Enter cost in CAD')
-
-    def validate_newname(self, newname):
-        if newname.data  is not self.original_name:
-            order = Order.query.filter_by(name=newname.data).first()
-
-            if order != None:
-                raise ValidationError('Enter a different item name')
 
 class OrderProfileForm(FlaskForm):
     add_order = SelectField('Add / Modify items')
