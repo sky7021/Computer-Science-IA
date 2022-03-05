@@ -1,6 +1,8 @@
 #not a file; initialized in init, part of folder
-from main import app, db
+from main import db, create_app
 from main.models import Admin, Profile, Order
+
+app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True) 

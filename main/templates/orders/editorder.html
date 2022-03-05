@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <p>
-    <form action="{{ url_for('delete_order', name=name) }}" method="post">
+    <form action="{{ url_for('orders.delete_order', name=name) }}" method="post">
         {{ delete_form.hidden_tag() }}
         {{ delete_form.submit(value='Delete Order')}}
     </form>
