@@ -160,7 +160,12 @@ def search_order():
 
     if form.validate_on_submit():
         name = request.form['order-choice']
-        return redirect(url_for('edit_order', ordername=name))
+        print(type(name))
+        if name != '':
+            return redirect(url_for('edit_order', ordername=name))
+        else:
+            flash('Field cannot be blank')
+            return redirect(url_for('search_order'))
 
     return render_template('searchorder.html', title='Search for Order', orders=all_orders, form=form)
 
@@ -173,7 +178,11 @@ def search_profile():
     if form.validate_on_submit():
         choice = request.form['profile-choice']
         email = choice.split(', ')[0]
-        return redirect(url_for('manageprofile', email=email))
+        if email != '':
+            return redirect(url_for('manageprofile', email=email))
+        else: 
+            flash('Field cannot be blank')
+            return redirect(url_for('search_profile'))
 
     return render_template('searchprofile.html', title='Search for Profile', profiles=all_profiles, form=form)
 
@@ -225,14 +234,22 @@ def manageprofile(email):
 
     if form.validate_on_submit():
         ordername = form.add_order.data
+        quantity = form.add_quantity.data
         removename = form.remove_order.data
         
         #filled in options each
         if ordername != 'Leave Blank':
             addedorder = Order.query.filter_by(name=ordername).first()
-            profile.add_order(addedorder)
-            flash('Order has been successfully added to profile')
-            db.session.commit()
+
+            if profile.owns_order(addedorder):
+                profile.modify_order(addedorder, quantity)
+                flash('Quantity successfully changed')
+                db.session.commit()
+
+            else:
+                profile.add_order(addedorder, quantity)
+                flash('Order has been successfully added to profile')
+                db.session.commit()
     
         if removename != 'Leave Blank':
             removedorder = Order.query.filter_by(name=removename).first()
@@ -247,8 +264,9 @@ def manageprofile(email):
         form.remove_order.data = 'Leave Blank'
 
     return render_template('manageprofile.html', title=f'{profile.username}\'s Profile', profile=profile, 
-    orders= obj_orders, form=form, delete_form=delete_form
+    orders= obj_orders, form=form, round=round, delete_form=delete_form
     )
+
     
 @app.route('/logout')
 def logout():

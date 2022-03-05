@@ -2,4 +2,6 @@
     <td> {{ order.id }} </td>
     <td> {{ order.name }} </td>
     <td> {{ order.price }} </td>
+    <td> {{ profile.order_quantity(order).quantity }}</td>
+    <td> {{ round(order.price * profile.order_quantity(order).quantity, 2) }}</td>
 </tr>
