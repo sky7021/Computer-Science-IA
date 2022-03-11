@@ -62,11 +62,29 @@ def homepage():
     page = request.args.get('page', 1, type=int)
 
     #print( Profile.query.join(Order, (Profile.id == Order.id)).add_columns(Profile.username, Profile.email, Order.name, Order.price).all())
-    profile_order = Profile.query.paginate(
+    profiles = Profile.query.paginate(
         page, current_app.config['PROFILES_PER_PAGE'], False
     )
 
-    return render_template('auth/homepage.html', profile_order = profile_order)
+    orders = Order.query.paginate(
+        page, current_app.config['ORDERS_PER_PAGE'], False
+    )
+
+    #length of list of items currently shown on page
+    l_profiles = len(profiles.items)
+    l_orders = len(orders.items)
+
+    if l_profiles < l_orders:
+        longest = l_orders
+        pagination = orders
+    else:
+        longest = l_profiles
+        pagination = profiles
+
+    print(page, profiles.items, orders.items, longest, l_profiles, l_orders)
+    return render_template('auth/homepage.html', profiles = profiles.items, orders = orders.items, longest = longest, pagination = pagination,
+    l_profiles = l_profiles, l_orders = l_orders
+    )
     
 #modify delete account to delete user profiles
 @bp.route('/delete_account', methods=['GET', 'POST'])

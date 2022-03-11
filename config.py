@@ -9,3 +9,4 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     PROFILES_PER_PAGE = 5
+    ORDERS_PER_PAGE = 3

@@ -9,18 +9,39 @@
         <table>
             <thead>
                 <tr>
+                    <th colspan='3'>Profiles</th>
+                    <th colspan='3'>Orders</th>
+                </tr>
+                
+                <tr>
                     <th> ID </th>
                     <th> username </th>
                     <th> email </th>
+
+                    <th> ID </th>
+                    <th> name </th>
+                    <th> price </th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for entry in profile_order.items %}
+                {% for i in range(longest)  %}
                 <tr>
-                    <td> {{ entry.id }} </td>
-                    <td> {{ entry.username }} </td>
-                    <td> {{ entry.email }} </td>
+                    {% if i <= l_profiles - 1 %}
+                        <td> {{ profiles[i].id }} </td>
+                        <td> {{ profiles[i].username }} </td>
+                        <td> {{ profiles[i].email }} </td>
+                    {% else %} 
+                        <td colspan='3'> NULL </td>
+                    {% endif %}
+
+                    {% if i <= l_orders - 1 %}
+                        <td> {{ orders[i].id }} </td>
+                        <td> {{ orders[i].name }} </td>
+                        <td> {{ orders[i].price }} </td>
+                    {% else %} 
+                        <td colspan='3'> NULL </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -28,9 +49,9 @@
     </p>
 
     <p>
-        {% for page_num in profile_order.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
             {% if page_num %}
-                {% if page_num != profile_order.page %}
+                {% if page_num != pagination.page %}
                     <a href='{{ url_for("auth.homepage", page=page_num) }}'> {{ page_num }} </a>
                 {% else %}
                     {{ page_num }}
