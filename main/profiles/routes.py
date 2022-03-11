@@ -82,13 +82,13 @@ def manageprofile(email):
     form.remove_order.choices = owned_orders
 
     if form.validate_on_submit():
-        ordername = form.add_order.data
+        order_name = form.add_order.data
         quantity = form.add_quantity.data
-        removename = form.remove_order.data
+        remove_name = form.remove_order.data
         
         #filled in options each
-        if ordername != 'Leave Blank':
-            addedorder = Order.query.filter_by(name=ordername).first()
+        if order_name != 'Leave Blank':
+            addedorder = Order.query.filter_by(name=order_name).first()
 
             if profile.owns_order(addedorder):
                 profile.modify_order(addedorder, quantity)
@@ -100,9 +100,9 @@ def manageprofile(email):
                 flash('Order has been successfully added to profile')
                 db.session.commit()
     
-        if removename != 'Leave Blank':
-            removedorder = Order.query.filter_by(name=removename).first()
-            profile.remove_order(removedorder)
+        if remove_name != 'Leave Blank':
+            removed_order = Order.query.filter_by(name=remove_name).first()
+            profile.remove_order(removed_order)
             flash('Order has successfully been removed from profile')
             db.session.commit()
 

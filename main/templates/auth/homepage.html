@@ -4,4 +4,42 @@
     <h1>Hi {{ current_user.username }}</h1>
     <a href='{{ url_for("auth.logout" )}}'>logout</a>
     <a href='{{ url_for("auth.delete_account" )}}'>delete account</a>
+
+    <p>
+        <table>
+            <thead>
+                <tr>
+                    <th> ID </th>
+                    <th> username </th>
+                    <th> email </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for entry in profile_order.items %}
+                <tr>
+                    <td> {{ entry.id }} </td>
+                    <td> {{ entry.username }} </td>
+                    <td> {{ entry.email }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </p>
+
+    <p>
+        {% for page_num in profile_order.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if page_num != profile_order.page %}
+                    <a href='{{ url_for("auth.homepage", page=page_num) }}'> {{ page_num }} </a>
+                {% else %}
+                    {{ page_num }}
+                {% endif %}
+            {% else %} 
+                ...
+            {% endif %}
+        {% endfor %}
+    </p>
+    
+
 {% endblock %}

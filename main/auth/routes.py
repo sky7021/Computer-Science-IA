@@ -1,10 +1,10 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, current_app
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user, login_required
 from main import db
 from main.auth import bp
 from main.auth.forms import LoginForm, CreateForm, DeleteForm
-from main.models import Admin
+from main.models import Admin, Profile, Order, OrderQuantity
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -58,8 +58,15 @@ def register():
 @bp.route('/homepage/')
 @login_required
 def homepage():
-    #TODO: bring up all the fumos that the Profile owns
-    return render_template('auth/homepage.html')
+    #int page var from URL, default 1
+    page = request.args.get('page', 1, type=int)
+
+    #print( Profile.query.join(Order, (Profile.id == Order.id)).add_columns(Profile.username, Profile.email, Order.name, Order.price).all())
+    profile_order = Profile.query.paginate(
+        page, current_app.config['PROFILES_PER_PAGE'], False
+    )
+
+    return render_template('auth/homepage.html', profile_order = profile_order)
     
 #modify delete account to delete user profiles
 @bp.route('/delete_account', methods=['GET', 'POST'])
