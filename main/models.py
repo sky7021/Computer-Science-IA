@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, func
 from main import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -93,7 +93,12 @@ class Order(db.Model):
         return Profile.query.join(
             LinkOrder, (LinkOrder.c.profile_id == Profile.id)
         ).filter(LinkOrder.c.order_id == self.id).order_by(Profile.username)
-
+    
+    def total_orders(self):
+        #total number of orders for that item. 
+        return OrderQuantity.query.with_entities(func.sum(OrderQuantity.quantity).label('mySum')).filter_by\
+        (order_name = self.name).first().mySum
+        
     def __repr__(self):
         return f'<{self.name}>'
 

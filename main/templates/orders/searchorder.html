@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<!--sends form data to URL in address bar-->
 <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
 
     <p>
+    <!--text label for form-->
     <label for="order-choice">Select a Order:</label>
+    <!--creates the form order-choice using the list passed into the html template-->
     <input list="order-selection" id="order-choice" name="order-choice" />
-
+    
+    <!--datalist element created using above list-->
     <datalist id="order-selection">
         {% for order in orders %}
         <option value='{{ order }}'>
@@ -15,6 +19,6 @@
 
     </p>
 
-    <p>{{ form.submit() }}</p>
+    <p>{{ form.submit(value='Search For Order') }}</p>
 </form>
 {% endblock %}

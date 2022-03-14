@@ -32,23 +32,29 @@
         {{ error }}
         {% endfor %}
     </p>
-
-    <p>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-            </tr>
-
-            {% for order in orders %}
-                {% include 'orders/_order.html' %}
-            {% endfor %}
-        </table>
-    </p>
-
     <p>{{ form.submit() }}</p>
 </form>
+
+<p>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+        </tr>
+
+        {% for order in orders %}
+
+            <tr valign="top">
+                {% include 'orders/_order.html' %}
+                <td> {{ profile.order_quantity(order).quantity }}</td>
+                <td> {{ round(order.price * profile.order_quantity(order).quantity, 2) }}</td>
+            </tr>
+            
+        {% endfor %}
+    </table>
+</p>
+
 {% endblock %}

@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!--submits the form to the current url (action='')-->
 <form action='' method= 'post' novalidate>
     {{ form.hidden_tag() }}
 
+    <!--acesses username variable of the form object, calling its label and field -->
     <p>
         {{ form.username.label }}
         {{ form.username(size=32) }}
+        <!--flashes errors-->
         {% for error in form.username.errors %}
         {{ error }}
         {% endfor %}
@@ -20,6 +23,7 @@
         {% endfor %}
     </p>
 
+    <!--submit field is called at the form's end-->
     {{ form.submit() }}
 </form>
 {% endblock %}

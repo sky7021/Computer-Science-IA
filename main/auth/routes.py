@@ -23,9 +23,12 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('auth.login'))
 
+        #logs user in (built in function)
         login_user(admin)
+        #requested page prior to login
         next_page = request.args.get('next')
         
+        #page must be on the same site 
         if not next_page or url_parse(next_page).netloc != '':
             return redirect(url_for('auth.homepage'))
         return redirect(next_page)
@@ -34,18 +37,22 @@ def login():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    #current admins cannot create accounts
     if current_user.is_authenticated:
         return redirect(url_for('auth.homepage'))
     
     form = CreateForm()
 
     if form.validate_on_submit():
+        #gets info from form
         username = form.username.data
         password = form.password.data
 
+        #creates new Admin object
         admin = Admin(username=username)
         admin.set_password(password)
 
+        #adds it to database
         db.session.add(admin)
         db.session.commit()
 
@@ -61,11 +68,13 @@ def homepage():
     #int page var from URL, default 1
     page = request.args.get('page', 1, type=int)
 
-    #print( Profile.query.join(Order, (Profile.id == Order.id)).add_columns(Profile.username, Profile.email, Order.name, Order.price).all())
+    #paginates all Profile entries, renders int amount in PROFILES_PER_PAGE for the current page, page. 
+    #False returns empty list instead of crashing
     profiles = Profile.query.paginate(
         page, current_app.config['PROFILES_PER_PAGE'], False
     )
 
+    #same as above but for orders
     orders = Order.query.paginate(
         page, current_app.config['ORDERS_PER_PAGE'], False
     )
@@ -73,17 +82,23 @@ def homepage():
     #length of list of items currently shown on page
     l_profiles = len(profiles.items)
     l_orders = len(orders.items)
-
+    
+    #table with most entries is used for pagination to ensure all entries be rendered
     if l_profiles < l_orders:
         longest = l_orders
-        pagination = orders
+        #pagination = orders
     else:
         longest = l_profiles
-        pagination = profiles
+        #pagination = profiles
 
-    print(page, profiles.items, orders.items, longest, l_profiles, l_orders)
+    if profiles.has_next:
+        pagination = profiles
+    else:
+        pagination = orders
+
+    #passes variables to be rendered in template
     return render_template('auth/homepage.html', profiles = profiles.items, orders = orders.items, longest = longest, pagination = pagination,
-    l_profiles = l_profiles, l_orders = l_orders
+    l_profiles = l_profiles, l_orders = l_orders, round = round
     )
     
 #modify delete account to delete user profiles

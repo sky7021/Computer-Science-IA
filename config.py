@@ -8,5 +8,5 @@ class Config(object):
     'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    PROFILES_PER_PAGE = 5
-    ORDERS_PER_PAGE = 3
+    PROFILES_PER_PAGE = 3
+    ORDERS_PER_PAGE = 2

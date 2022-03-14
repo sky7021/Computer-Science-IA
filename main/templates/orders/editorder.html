@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 <p>
+    <!--sends POST data to a different url than the one in the address bar.
+    Action= is set to delete_order's URL with the deleted order's name as an argument-->
     <form action="{{ url_for('orders.delete_order', name=name) }}" method="post">
         {{ delete_form.hidden_tag() }}
+        <!--value= adds a label-->
         {{ delete_form.submit(value='Delete Order')}}
     </form>
 </p>
@@ -28,4 +31,22 @@
 
     <p>{{ form.submit() }}</p>
 </form>
+
+<p>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+        </tr>
+
+        {% for profile in profiles_list %}
+
+            <tr valign="top">
+                {% include 'profiles/_profile.html' %}
+            </tr>
+            
+        {% endfor %}
+    </table>
+</p>
 {% endblock %}

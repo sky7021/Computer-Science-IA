@@ -3,14 +3,14 @@
 {% block content %}
     <h1>Hi {{ current_user.username }}</h1>
     <a href='{{ url_for("auth.logout" )}}'>logout</a>
-    <a href='{{ url_for("auth.delete_account" )}}'>delete account</a>
+    <!--<a href='{{ url_for("auth.delete_account" )}}'>delete account</a>-->
 
     <p>
         <table>
             <thead>
                 <tr>
                     <th colspan='3'>Profiles</th>
-                    <th colspan='3'>Orders</th>
+                    <th colspan='4'>Orders</th>
                 </tr>
                 
                 <tr>
@@ -21,6 +21,7 @@
                     <th> ID </th>
                     <th> name </th>
                     <th> price </th>
+                    <th> total </th>
                 </tr>
             </thead>
 
@@ -32,15 +33,18 @@
                         <td> {{ profiles[i].username }} </td>
                         <td> {{ profiles[i].email }} </td>
                     {% else %} 
-                        <td colspan='3'> NULL </td>
+                        <td colspan='3'></td>
                     {% endif %}
 
                     {% if i <= l_orders - 1 %}
                         <td> {{ orders[i].id }} </td>
                         <td> {{ orders[i].name }} </td>
                         <td> {{ orders[i].price }} </td>
+                        {% if orders[i].total_orders() != None %}
+                        <td> {{ round( orders[i].total_orders() * orders[i].price, 2) }} </td>
+                        {% endif %}
                     {% else %} 
-                        <td colspan='3'> NULL </td>
+                        <td colspan='3'></td>
                     {% endif %}
                 </tr>
                 {% endfor %}

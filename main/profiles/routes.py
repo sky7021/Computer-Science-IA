@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required
 from main import db
 from main.profiles import bp
-from main.profiles.forms import CreateProfile, SearchProfileForm, OrderProfileForm, EmptyForm
+from main.profiles.forms import CreateProfile, OrderProfileForm, EmptyForm
 from main.models import Profile, Order
 
 #creates customer profile
@@ -10,12 +10,16 @@ from main.models import Profile, Order
 @login_required
 def create_profile():
 
+    #intializes CreateProfile form
     form = CreateProfile()
 
+    #form has valid input
     if form.validate_on_submit():
+        #retrieves data from form fields (class variables)
         username = form.username.data
         email = form.email.data
 
+        #creates profile with form data
         profile = Profile(username=username, email=email)
         db.session.add(profile)
         db.session.commit()
@@ -46,7 +50,7 @@ def delete_profile(id):
 @bp.route('/searchprofile/', methods=['GET', 'POST'])
 @login_required
 def search_profile():
-    form = SearchProfileForm()
+    form = EmptyForm()
     all_profiles = [f'{p.email}, {p.username}' for p in Profile.query.order_by('username')] #value label pairs to pass into form
 
     if form.validate_on_submit():
@@ -64,8 +68,7 @@ def search_profile():
 @login_required
 def manageprofile(email):
 
-    #TODO: render all of the profile's fumos inside of a table, display their total price
-
+    #finds first occurance of queried profile or returns None
     profile = Profile.query.filter_by(email=email).first()
     if profile is None:
         flash('Profile not found')
