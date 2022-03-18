@@ -1,0 +1,9 @@
+Program: Profile Database
+
+Instructions:
+1. Make sure all libraries are installed by running "pip install -r requirements.txt"
+in a shell in the same folder all the files are in. 
+2. Open mainfile.py and run that 
+3. go to http://127.0.0.1:5000/auth/homepage
+4. enter username: "admin", password: "2004" to log in
+

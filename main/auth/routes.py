@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from main import db
 from main.auth import bp
 from main.auth.forms import LoginForm, CreateForm, DeleteForm
-from main.models import Admin, Profile, Order, OrderQuantity
+from main.models import Admin, Profile, Order
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -83,14 +83,13 @@ def homepage():
     l_profiles = len(profiles.items)
     l_orders = len(orders.items)
     
-    #table with most entries is used for pagination to ensure all entries be rendered
+    #table with most entries is used for rendering the table
     if l_profiles < l_orders:
         longest = l_orders
-        #pagination = orders
     else:
         longest = l_profiles
-        #pagination = profiles
 
+    #table with subsequent pages is used for pagination to cover all pages
     if profiles.has_next:
         pagination = profiles
     else:

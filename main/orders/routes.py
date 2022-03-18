@@ -44,7 +44,7 @@ def add_order():
         db.session.commit()
 
         flash('Order successfully created!')
-        return redirect(url_for('auth.homepage'))
+        return redirect(url_for('orders.add_order'))
     
     return render_template('orders/makeorder.html', title='Order creation', form=form )
 

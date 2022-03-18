@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField
+from wtforms import StringField, SubmitField, SelectField, IntegerField
 from wtforms.validators import ValidationError, DataRequired
 from main.models import Profile, Order
 import re
@@ -46,14 +46,19 @@ class OrderProfileForm(FlaskForm):
     def validate_add_quantity(self, add_quantity): 
         #add_order and add_quantity fields are filled
         if self.addedorder != 'Leave Blank' and add_quantity.data != '':
-            if int(add_quantity.data) <= 0:
-                raise ValidationError('Quantity cannot be 0 or less')
+            try:
+                if int(add_quantity.data) <= 0:
+                    raise ValidationError('Quantity cannot be 0 or less')
+            except:
+                raise ValidationError('Quantity must be an integer')
 
             #queried Order object when first two fields are filled with acceptable data
             order = Order.query.filter_by(name=self.addedorder).first()
             #An entry for order with the same quantity already exists
+            
             if self.profile.owns_order(order) and self.profile.order_quantity(order).quantity == int(add_quantity.data):
                 raise ValidationError('Item already added')
+      
         
         #additional exceptions
         #filled order and unfilled quantity

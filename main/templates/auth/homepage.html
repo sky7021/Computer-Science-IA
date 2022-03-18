@@ -8,11 +8,13 @@
     <p>
         <table>
             <thead>
+                <!--header row spans multiple columns-->
                 <tr>
                     <th colspan='3'>Profiles</th>
                     <th colspan='4'>Orders</th>
                 </tr>
                 
+                <!--subheaders, 3 for profiles and 4 for orders matching the above-->
                 <tr>
                     <th> ID </th>
                     <th> username </th>
@@ -25,14 +27,18 @@
                 </tr>
             </thead>
 
+            <!-- for loop filling table with values from both Order and Profile lists at the same time-->
+            <!--users the longest list to make sure all values are filled-->
             <tbody>
                 {% for i in range(longest)  %}
                 <tr>
+                    <!--stops when at the end of the list-->
                     {% if i <= l_profiles - 1 %}
                         <td> {{ profiles[i].id }} </td>
                         <td> {{ profiles[i].username }} </td>
                         <td> {{ profiles[i].email }} </td>
                     {% else %} 
+                    <!--otherwise prints empty entry-->
                         <td colspan='3'></td>
                     {% endif %}
 
@@ -40,6 +46,7 @@
                         <td> {{ orders[i].id }} </td>
                         <td> {{ orders[i].name }} </td>
                         <td> {{ orders[i].price }} </td>
+                        <!--calculates order total if it customers have actually ordered it; total ordered * price-->
                         {% if orders[i].total_orders() != None %}
                         <td> {{ round( orders[i].total_orders() * orders[i].price, 2) }} </td>
                         {% endif %}
@@ -52,12 +59,15 @@
         </table>
     </p>
 
+    <!--loops through page numbers in pagination pages-->
     <p>
-        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
+                <!--other pages to navigate to-->
                 {% if page_num != pagination.page %}
                     <a href='{{ url_for("auth.homepage", page=page_num) }}'> {{ page_num }} </a>
                 {% else %}
+                    <!--current page is greyed out (cannot click)-->
                     {{ page_num }}
                 {% endif %}
             {% else %} 
