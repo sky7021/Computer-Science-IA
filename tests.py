@@ -1,6 +1,6 @@
-import unittest
+import unittest, datetime
 from main import create_app, db
-from main.models import Profile, Order, OrderQuantity
+from main.models import Profile, Order, LinkOrder
 from config import Config
 
 class TestConfig(Config):
@@ -29,14 +29,34 @@ class UserModelCase(unittest.TestCase):
         f2 = Order(name='Tenshi', price=100)
         db.session.add_all([f1, f2])
         db.session.commit()
-
-        p1.add_order(f1, 5)
-        p2.add_order(f1, 10)
-        p2.add_order(f2, 2)
+        
+        #Cirno and Tenshi added to sky7021
+        p1.add_order(f1, 5, datetime.date(2020, 5, 17))
+        p1.add_order(f2, 15, datetime.date(2020, 5, 17))
+        
+        #Cirno and Tenshi added to baldspot
+        p2.add_order(f1, 10, datetime.date(2020, 5, 17))
+        p2.add_order(f2, 2, datetime.date(2020, 5, 17))
         db.session.commit()
-        print(f1.owner_profiles().all())
-        self.assertEqual(f1.total_orders(), 15)
-        #self.assertEqual(p2.order_quantity(f1).quantity, 10)
 
+        #sky7021's order of Cirno on 2020/5/17 gets updated to 20
+        p1.modify_quantity(f1, 20, datetime.date(2020, 5, 17))
+        db.session.commit()
+        self.assertEqual(p1.get_order(f1, datetime.date(2020, 5, 17)).quantity, 20)
+
+        #name changed from Cirno to Aya and price to 10
+        f1.name = 'Aya' 
+        f1.price = 10
+        db.session.commit()
+        p1_order_f1 = p1.get_order(f1, datetime.date(2020, 5, 17)).order
+        self.assertEqual(p1_order_f1.name, 'Aya')
+        self.assertEqual(p1_order_f1.price, 10)
+
+        p1.remove_order(f1, datetime.date(2020, 5, 17))
+        db.session.commit()
+        self.assertEqual(p1.owned_orders(datetime.date(2020, 5, 17)), [f2])
+
+
+#tested: total_orders, get_order
 if __name__ == '__main__':
     unittest.main(verbosity=2)

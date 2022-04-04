@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, func, and_
 from main import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -18,8 +18,6 @@ class Admin(db.Model, UserMixin):
         #checks against stored hash
         return check_password_hash(self.password_hash, password)
 
-#association table linking profile.id-to-order.id pairs
-#"child" table since it contains foreign keys
 class LinkOrder(db.Model):
     #directly accepts Profile object in intantiation to avoid dealing with ids
     #Profile objects now have the 'profiles_assoc' method to view the LinkOrder object
@@ -41,52 +39,51 @@ class Profile(db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
 
     #table with profile, orders, their quantities, and the date
-    orders = db.relationship('Order', back_populates='customers', secondary=LinkOrder, lazy='dynamic')
-    profile_assoc = db.relationship('LinkOrder', back_populates='profile')
+    profile_assoc = db.relationship('LinkOrder', back_populates='profile', cascade='all, delete-orphan')
     
+    #keyword arguements
     def add_order(self, order, quantity, date):
-        profile_order = LinkOrder(self.id, order.id, quantity, date)
+
         #adds item type if profile doesn't already own it
-        if not self.owns_order(profile_order):
-            #adds profile-order id entry into association table 
-            self.orders.append(order)
+        if not self.owns_order(order, date):
+
+            profile_order = LinkOrder(profile=self, order=order, quantity=quantity, order_date=date)
+            #adds profile-order id entry into association table based on relationship
+            self.profile_assoc.append(profile_order)
 
     def modify_quantity(self, order, new_quantity, date):
         #modifies order if Profile has it
         if self.owns_order(order, date):
-            #fetches current entry for profile-order pair on the specified date 
-            entry = self.find_entry(order, date)       
+            #fetches entry on specified date
+            entry = self.get_order(order, date)       
             #updates with new quantity 
             entry.quantity = new_quantity
 
 #TODO: modify owns_order and order_quantity methods 
 
-
-    def remove_order(self, order):
+    def remove_order(self, order, date):
         #removes order if Profile has it
-        if self.owns_order(order):
+        if self.owns_order(order, date):
             #removes entry from association table
-            self.orders.remove(order)
-            #removes the order's quantity object from the Profile's quantities table
-            self.quantities.remove(self.order_quantity(order)) 
+            self.profile_assoc.remove(self.get_order(order, date))
     
-    def owns_order(self, order):
-        #searches for entry in association table with Profile and order ids
-        query = self.orders.filter(LinkOrder.c.order_id == order.id).count()
-        if query > 0:
+    def owns_order(self, order, date):
+        #searches for entry in association table with profile, order, and date
+        if self.get_order(order, date) != None:
             return True
     
-    def owned_orders(self):
-        #returns list of orders
-        return Order.query.join(
-            LinkOrder, (LinkOrder.c.order_id == Order.id)).filter(LinkOrder.c.profile_id == self.id).order_by(Order.price)
-    
-    def find_entry(self, order):
-        #returns quantity of order
-        return OrderQuantity.query.join(
-            Profile, (OrderQuantity.profile == self)
-        ).filter(OrderQuantity.order_name == order.name).first()
+    def get_order(self, order, date):
+        #profile, order, and date all match
+        return LinkOrder.query.filter(LinkOrder.profile == self, LinkOrder.order == order, LinkOrder.order_date == date).first()
 
+    #returns list of orders on a given date
+    def owned_orders(self, date):
+        #orders that have been ordered at least once have their profile / dates compared with the ones given
+        return Order.query.join(
+            LinkOrder, (LinkOrder.order_id == Order.id)).filter(
+                LinkOrder.profile == self, LinkOrder.order_date == date
+                ).order_by(Order.price).all()
+    
     def __repr__(self):
         return f'<{self.username}>'
 
@@ -96,19 +93,23 @@ class Order(db.Model):
     price = db.Column(db.Integer, index=True)
 
     #"right" side of a many-to-many relationship (Profile-to-Order) defined in an association table 
-    customers = db.relationship('Profile', back_populates='orders', secondary=LinkOrder, lazy='dynamic')
-    order_assoc = db.relationship('LinkOrder', back_populates = 'order')
+    #customers = db.relationship('Profile', back_populates='orders', secondary=LinkOrder, lazy='dynamic')
+    order_assoc = db.relationship('LinkOrder', back_populates = 'order', cascade='all, delete-orphan')
 
-    def owner_profiles(self):
-        #returns all Profiles that have ordered the item
+    def owner_profiles(self, date):
+        #keeps profiles with an entry in the table
+
         return Profile.query.join(
-            LinkOrder, (LinkOrder.c.profile_id == Profile.id)
-        ).filter(LinkOrder.c.order_id == self.id).order_by(Profile.username)
+            LinkOrder, (LinkOrder.profile_id == Profile.id)
+        ).filter(LinkOrder.order == self, LinkOrder.order_date == date).order_by(Profile.username).all()
     
-    def total_orders(self):
-        #total number of orders for that item. 
-        return OrderQuantity.query.with_entities(func.sum(OrderQuantity.quantity).label('mySum')).filter_by\
-        (order_name = self.name).first().mySum
+    #returns all orders on a given date
+    def total_orders(self, date):
+
+        #select the above, add up values in the quantity column for those 
+        return LinkOrder.query.with_entities(func.sum(LinkOrder.quantity).label('mySum')).filter_by(
+            order = self, order_date = date
+        ).first().mySum
         
     def __repr__(self):
         return f'<{self.name}>'
